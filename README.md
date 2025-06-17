@@ -1,7 +1,7 @@
 <h1 align="center">ForenPDF</h1>
 
 <p align="center">
-  <img src="./forenPDF.png" alt="ForenPDF Logo" width="250"/>
+  <img src="./assets/forenPDF.png" alt="ForenPDF Logo" width="250"/>
 </p>
 
 ## PDF Forensic Data Extractor
