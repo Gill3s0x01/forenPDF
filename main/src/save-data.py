@@ -43,6 +43,34 @@ absolute_path = os.path.abspath(pdf_path)
 # Open the PDF document
 doc = fitz.open(pdf_path)
 
+# Check if the PDF requires a password to open
+if doc.needs_pass:
+    print("🔒 This PDF is password protected.")
+    response = input("❓ Do you have the password? (y/n): ").strip().lower()
+
+    if response == "y":
+        password = input("🔑 Enter the password: ").strip()
+        if not doc.authenticate(password):
+            print("❌ Incorrect password. Exiting.")
+            exit(1)
+        else:
+            print("✅ PDF successfully unlocked.")
+    elif response == "n":
+        print("⚠️ Without the password, it is not possible to open this PDF.")
+        print("❌ Exiting.")
+        exit(1)
+    else:
+        print("❌ Invalid option. Exiting.")
+        exit(1)
+else:
+    print("✅ PDF is not password protected.")
+
+# Determine if there are permissions restrictions (like copy/print/edit)
+if not doc.is_encrypted:
+    permissions_status = "No restrictions."
+else:
+    permissions_status = "Permissions restrictions detected."
+
 # Create a directory for extracted images if it doesn't exist
 if not os.path.exists("extracted_images"):
     os.makedirs("extracted_images")
@@ -75,6 +103,9 @@ with open(report_filename, "w", encoding="utf-8") as report:
     for key, value in doc.metadata.items():
         report.write(f"{key}: {value}\n")
     report.write("\n")
+
+    report.write("=== 🔒 PDF PERMISSIONS STATUS ===\n\n")
+    report.write(f"{permissions_status}\n\n")
 
     # Get PDF version from first line of xref 0 object
     try:
@@ -159,6 +190,19 @@ with open(report_filename, "w", encoding="utf-8") as report:
         report.write(xmp + "\n\n")
     except:
         report.write("No XMP content found.\n\n")
+
+        # Check for XMP metadata via catalog
+    report.write("=== 📜 XMP METADATA (RAW1) ===\n\n")
+    try:
+        metadata_obj = doc.trailer["/Root"].get("/Metadata")
+        if metadata_obj:
+            xref = metadata_obj.xref
+            xmp_raw = doc.xref_object(xref).decode("utf-8", errors="ignore")
+            report.write(xmp_raw + "\n\n")
+        else:
+            report.write("No XMP metadata found in catalog.\n\n")
+    except Exception as e:
+        report.write(f"Error accessing XMP metadata: {str(e)}\n\n")
 
     report.write(f"=== 📊 TOTAL LINES IN DOCUMENT: {total_lines} ===\n")
     report.write(f"Total images extracted: {total_images}\n")
