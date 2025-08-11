@@ -1,6 +1,4 @@
-#!/usr/bin/env python3
-# forensic_pdf_processor_improved.py
-# Versão melhorada: argparse, logging, extração de attachments/JS, OCR seguro, validação de IOCs
+# Nova Versão: argparse, logging, extração de attachments/JS, OCR seguro, validação de IOCs
 
 import argparse
 import fitz  # PyMuPDF
@@ -222,7 +220,7 @@ def process_pdf(
                 urls = URL_RE.findall(page_text)
                 ips = IP_RE.findall(page_text)
                 emails = EMAIL_RE.findall(page_text)
-                # dedupe
+
                 urls = list(dict.fromkeys(urls))
                 ips = list(dict.fromkeys(ips))
                 emails = list(dict.fromkeys(emails))
